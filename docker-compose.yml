@@ -1,0 +1,21 @@
+services:
+  maxcloud_vps:
+    container_name: maxcloud_vps
+    build:
+      context: .
+    ports:
+      - "8080:8080"
+    environment:
+      - DATABASELINK=postgres://pebble:cloudmax@vps_client:5432/vps_client
+    depends_on:
+      - vps_client
+
+  vps_client:
+    container_name: vps_client
+    image: postgres
+    environment:
+      POSTGRES_USER: pebble
+      POSTGRES_PASSWORD: cloudmax
+      POSTGRES_DB: vps_client
+    ports:
+      - "5432:5432"
