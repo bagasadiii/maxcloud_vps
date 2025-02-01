@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"net/http"
+
 	"github.com/bagasadiii/maxcloud_vps/config"
 	"github.com/bagasadiii/maxcloud_vps/handler"
 	"github.com/bagasadiii/maxcloud_vps/repository"
@@ -26,10 +27,10 @@ func main() {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/api/register", clientHandler.CreateClient).Methods("POST")
-	r.HandleFunc("/api/{client_id}", clientHandler.GetClientInfo).Methods("GET")
+	r.HandleFunc("/api/client/{client_id}", clientHandler.GetClientInfo).Methods("GET")
 
 	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel() 
+	defer cancel()
 	go txSchedulerService.SchedulerWorkerService(ctx, 5)
 
 	server := &http.Server{

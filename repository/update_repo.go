@@ -19,7 +19,7 @@ type TransactionSchedulerRepoImpl interface {
 	UpdateTotalFee(ctx context.Context, tx pgx.Tx, billingID uuid.UUID, newFee int) error
 	UpdateClientInfo(ctx context.Context, tx pgx.Tx, clientID uuid.UUID) error
 	UpdateBillingInfo(ctx context.Context, tx pgx.Tx, billingID uuid.UUID, newUptime int) error
-	SuspendClient(ctx context.Context, tx pgx.Tx, billingID uuid.UUID) error
+	SuspendClient(ctx context.Context, tx pgx.Tx, clientID uuid.UUID) error
 }
 type TransactionSchedulerRepo struct {
 	logger *zap.Logger
@@ -35,7 +35,7 @@ func NewTransactionSchedulerRepo(db *pgxpool.Pool, logger *zap.Logger) *Transact
 
 func (hr *TransactionSchedulerRepo) GetActiveClient(ctx context.Context) ([]model.UpdateClient, error) {
 	rows, err := hr.db.Query(ctx, `
-    SELECT c.client_id, c.suspended, c.balance, c.created_at, b.monthly_fee, b.cost_per_hour, b.total_fee, b.uptime, b.billing_id
+    SELECT c.client_id, c.suspended, c.balance, c.updated_at, b.monthly_fee, b.cost_per_hour, b.total_fee, b.uptime, b.billing_id
     FROM clients c
     JOIN billings b ON c.client_id = b.client_id
     WHERE c.suspended = false
@@ -54,7 +54,7 @@ func (hr *TransactionSchedulerRepo) GetActiveClient(ctx context.Context) ([]mode
 			&client.ClientID,
 			&client.Suspended,
 			&client.Balance,
-			&client.CreatedAt,
+			&client.UpdatedAt,
 			&client.MonthlyFee,
 			&client.CostPerHour,
 			&client.TotalFee,
@@ -131,13 +131,13 @@ func (hr *TransactionSchedulerRepo) UpdateBillingInfo(ctx context.Context, tx pg
 	return nil
 }
 
-func (hr *TransactionSchedulerRepo) SuspendClient(ctx context.Context, tx pgx.Tx, billingID uuid.UUID) error {
-	_, err := tx.Exec(ctx, `UPDATE clients SET suspended = true WHERE billing_id = $1`, billingID)
+func (hr *TransactionSchedulerRepo) SuspendClient(ctx context.Context, tx pgx.Tx, clientID uuid.UUID) error {
+	_, err := tx.Exec(ctx, `UPDATE clients SET suspended = true WHERE client_id = $1`, clientID)
 	if err != nil {
 		info := "failed to suspend clients"
 		hr.logger.Error(utils.ErrDatabase.Error(),
 			zap.String("error", info),
-			zap.String("billing_id", billingID.String()),
+			zap.String("billing_id", clientID.String()),
 			zap.Error(err))
 		return fmt.Errorf("%s: %w", info, utils.ErrDatabase)
 	}

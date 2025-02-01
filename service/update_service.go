@@ -37,13 +37,6 @@ func (hs *TransactionSchedulerService) SchedulerWorkerService(ctx context.Contex
 			hs.logger.Info("Worker started", zap.Int("worker_id", id))
 			for client := range jobs {
 				hs.logger.Info("Worker processing transaction", zap.String("client_id", client.ClientID.String()))
-				threshold := client.Balance
-				if client.Balance < threshold {
-					hs.logger.Info("This client's balance is less than 10%", zap.Any("client", client))
-				}
-				if client.Balance < 0 {
-					client.Suspended = true
-				}
 				if err := hs.transactionService(ctx, client); err != nil {
 					info := "failed to process transaction"
 					hs.logger.Error(utils.ErrInternal.Error(), zap.String("error", info), zap.Error(err), zap.Any("client", client))
@@ -61,7 +54,6 @@ func (hs *TransactionSchedulerService) SchedulerWorkerService(ctx context.Contex
 			return
 		default:
 			hs.schedulerService(ctx, jobs)
-			time.Sleep(5 * time.Second)
 		}
 	}
 }
@@ -75,12 +67,11 @@ func (hs *TransactionSchedulerService) schedulerService(ctx context.Context, job
 	}
 	for _, client := range clients {
 		clientCopy := client
+		now := time.Now()
 
-		nextPayment := time.Until(client.CreatedAt.Add(time.Hour))
-
-		time.Sleep(nextPayment)
-
-		jobs <- &clientCopy
+		if now.Sub(client.UpdatedAt).Hours() >= 1 {
+			jobs <- &clientCopy
+		}
 	}
 }
 
@@ -98,6 +89,12 @@ func (hs *TransactionSchedulerService) transactionService(ctx context.Context, d
 			tx.Rollback(ctx)
 		}
 	}()
+
+	threshold := int(float64(data.MonthlyFee) * 0.10)
+	if data.Balance < threshold {
+		hs.logger.Warn("Client have less than 10% of monthly fee", zap.Any("client", data))
+	}
+
 	newBalance := data.Balance - data.CostPerHour
 	err = hs.repo.UpdateBalance(ctx, tx, data.ClientID, newBalance)
 	if err != nil {
@@ -115,16 +112,17 @@ func (hs *TransactionSchedulerService) transactionService(ctx context.Context, d
 		return err
 	}
 
-	err = hs.repo.UpdateBillingInfo(ctx, tx, data.BillingID, data.Uptime+1)
+	newUptime := data.Uptime + 1
+	err = hs.repo.UpdateBillingInfo(ctx, tx, data.BillingID, newUptime)
 	if err != nil {
 		return err
 	}
-
 	if newBalance < 0 {
-		err = hs.repo.SuspendClient(ctx, tx, data.BillingID)
+		err = hs.repo.SuspendClient(ctx, tx, data.ClientID)
 		if err != nil {
 			return err
 		}
+		hs.logger.Warn("Client suspended", zap.Any("client", data))
 	}
 
 	err = tx.Commit(ctx)
