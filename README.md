@@ -15,8 +15,8 @@ Aplikasi akan otomatis berjalan melalui http://localhost:8080
 Untuk menyimpan client, saya menggunakan database PostgreSQL untuk menyimpan data client.
 Anda bisa mendaftarkan client dengan cara mengirim request JSON ke endpoint http://localhost:8080/api/register dengan method post.
 ada tiga komponen yang dikirimkan ke JSON yaitu **Email, Plan dan Balance**
-Untuk value plan saat ini hanya bisa menggunakan plan basic, normal dan premium
-Untuk value balance mohon masukkan angka yang lebih dari down payment, karena balance diperlukan untuk membayar down payment di awal service
+Untuk value plan saat ini hanya bisa menggunakan plan basic, normal dan premium.
+Untuk value balance mohon masukkan angka yang lebih dari down payment + monthly fee, karena balance diperlukan untuk membayar down payment di awal service dan memastikan layanan akan tetap berjalan sebulan kedepan dengan mengecek monthly fee nya.
 
 ## Contoh
 ```json
