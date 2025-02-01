@@ -1,4 +1,4 @@
-#Cloudmax_VPS
+# Cloudmax_VPS
 Ini adalah project untuk test backend ke perusahaan Maxcloud, aplikasi ini digunakan untuk monitoring VPS client yang masuk dan otomatis memotong saldo setiap satu jam.
 Untuk menjalankan aplikasi, clone aplikasi ini menggunakan
 ```sh
@@ -11,14 +11,14 @@ docker compose up -d --build
 ```
 Aplikasi akan otomatis berjalan melalui http://localhost:8080
 
-##Mendaftarkan client
+## Mendaftarkan client
 Untuk menyimpan client, saya menggunakan database PostgreSQL untuk menyimpan data client.
 Anda bisa mendaftarkan client dengan cara mengirim request JSON ke endpoint http://localhost:8080/api/register dengan method post.
 ada tiga komponen yang dikirimkan ke JSON yaitu **Email, Plan dan Balance**
 Untuk value plan saat ini hanya bisa menggunakan plan basic, normal dan premium
 Untuk value balance mohon masukkan angka yang lebih dari down payment, karena balance diperlukan untuk membayar down payment di awal service
 
-##Contoh
+## Contoh
 ```json
 {
   "email": "test@example.com",
