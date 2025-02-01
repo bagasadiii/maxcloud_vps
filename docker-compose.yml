@@ -1,6 +1,7 @@
 services:
   maxcloud_vps:
     container_name: maxcloud_vps
+    image: maxcloud_image
     build:
       context: .
     ports:
