@@ -1,4 +1,4 @@
-# Cloudmax_VPS
+# MaxCloud VPS
 Ini adalah project untuk test backend ke perusahaan Maxcloud, aplikasi ini digunakan untuk monitoring VPS client yang masuk dan otomatis memotong saldo setiap satu jam.
 Untuk menjalankan aplikasi, clone aplikasi ini menggunakan
 ```sh
@@ -7,7 +7,7 @@ cd maxcloud_vps
 ```
 Lalu jalankan docker dengan perintah
 ```sh
-docker compose up -d --build
+docker compose up --build
 ```
 Aplikasi akan otomatis berjalan melalui http://localhost:8080
 
